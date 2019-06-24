@@ -7,6 +7,9 @@ using Newtonsoft.Json.Serialization;
 using System.Linq;
 using BlazorDualMode.Server.Data;
 using BlazorDualMode.Shared;
+using System.Net.Http;
+using Microsoft.AspNetCore.Components;
+using System;
 
 namespace BlazorDualMode.Server
 {
@@ -18,6 +21,17 @@ namespace BlazorDualMode.Server
         {
             services.AddMvc();
             services.AddServerSideBlazor();
+
+            services.AddScoped<HttpClient>(s =>
+            {
+                // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
+                var uriHelper = s.GetRequiredService<IUriHelper>();
+                return new HttpClient
+                {
+                    BaseAddress = new Uri(uriHelper.GetBaseUri())
+                };
+            });
+
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
